@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -158,9 +155,10 @@
                                 <thead>
                                     <tr class="bg-slate-50 text-slate-500 text-xs uppercase font-bold">
                                         <th class="px-6 py-4">Date</th>
-                                        <th className="px-6 py-4">Type</th>
-                                        <th className="px-6 py-4">Duration</th>
-                                        <th className="px-6 py-4">Details</th>
+                                        <th class="px-6 py-4">Type</th>
+                                        <th class="px-6 py-4">Duration</th>
+                                        <th class="px-6 py-4">Details</th>
+                                        <th class="px-6 py-4 text-right">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="historyBody" class="divide-y divide-slate-100">
@@ -237,6 +235,11 @@
             };
         }
 
+        function removeRecord(recordId) {
+            leaveRecords = leaveRecords.filter(r => r.id !== recordId);
+            updateUI();
+        }
+
         function updateUI() {
             if (!selectedEmpId) {
                 emptyState.classList.remove('hidden');
@@ -263,22 +266,27 @@
             const filteredRecords = leaveRecords.filter(r => r.empId === selectedEmpId);
             
             if (filteredRecords.length === 0) {
-                historyBody.innerHTML = '<tr><td colspan="4" class="px-6 py-10 text-center text-slate-400">No records yet.</td></tr>';
+                historyBody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-slate-400">No records yet.</td></tr>';
             } else {
-                filteredRecords.forEach(rec => {
+                filteredRecords.slice().reverse().forEach(rec => {
                     const typeClass = rec.type === 'Vacation Leave' ? 'bg-blue-100 text-blue-700' : 
                                      rec.type === 'Sick Leave' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600';
-                    const row = `
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-6 py-4 font-medium">${rec.date}</td>
-                            <td class="px-6 py-4">
-                                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${typeClass}">${rec.type}</span>
-                            </td>
-                            <td class="px-6 py-4 text-xs">${rec.duration === 1 ? 'Full Day' : 'Half Day'}</td>
-                            <td class="px-6 py-4 text-xs text-slate-500 italic max-w-xs truncate">${rec.reason || '-'}</td>
-                        </tr>
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-50 transition-colors group';
+                    row.innerHTML = `
+                        <td class="px-6 py-4 font-medium">${rec.date}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${typeClass}">${rec.type}</span>
+                        </td>
+                        <td class="px-6 py-4 text-xs">${rec.duration === 1 ? 'Full Day' : 'Half Day'}</td>
+                        <td class="px-6 py-4 text-xs text-slate-500 italic max-w-xs truncate">${rec.reason || '-'}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="removeRecord('${rec.id}')" class="text-rose-400 hover:text-rose-600 p-2 rounded-lg hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100" title="Remove Record">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                            </button>
+                        </td>
                     `;
-                    historyBody.insertAdjacentHTML('afterbegin', row);
+                    historyBody.appendChild(row);
                 });
             }
         }
